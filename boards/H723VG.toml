@@ -7,8 +7,10 @@
 # Сведения о плате (README WeAct, не проверены на образце):
 #   экран 0,96" ST7735 TFT; слот microSD (TF); 8 МБ SPI Flash (SPI1); 8 МБ OSPI Flash (OSPI1);
 #   порт DVP 8 бит; кнопка пользователя K1 (PC13); USB Type-C.
-# Периферия навигатора (экран, GNSS, SD, кнопки, питание) не выбрана:
-# docs/TECHNICAL_SPECIFICATION.md, раздел 13.
+# Узлы стенда и выводы — ТЗ п. 3.5.2, 3.6.2: встроенный экран ST7735 (SPI4: PE12, PE14;
+#   CS PE11, DC PE13, подсветка PE10), слот microSD (SDMMC1 4 бит: PC8-PC12, PD2),
+#   K1 PC13, светодиод PE3; GY-GPS6MV2 (USART2: PA2, PA3); журнал USART1 (PA9, PA10);
+#   USB_OTG_HS со встроенным FS PHY (PA11, PA12).
 
 [profiles.H723VG]
 mcu = "STM32H723VG"

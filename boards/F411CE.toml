@@ -7,8 +7,11 @@
 # Сведения о плате (README и схема WeAct, не проверены на образце):
 #   кварцы 25 МГц и 32,768 кГц; кнопка пользователя KEY (PA0); светодиод PC13;
 #   USB Type-C (OTG FS); площадка под SPI Flash (по умолчанию не установлена).
-# Периферия навигатора (экран, GNSS, SD, кнопки, питание) не выбрана:
-# docs/TECHNICAL_SPECIFICATION.md, раздел 13.
+# Модули стенда и выводы — ТЗ п. 3.5, 3.6.1; провода — docs/WIRING.md:
+#   экран IPS 240x240 (SPI1: PA5, PA7; DC PB0, RES PB1, BLK PB10);
+#   Catalex microSD (SPI2: PB13, PB14, PB15; CS PB12; питание 5V);
+#   GY-GPS6MV2 / NEO-6M (USART2: PA2, PA3); журнал USART1 (PA9, PA10); USB PA11, PA12.
+# Тактирование: HSE 25 МГц, SYSCLK 96 МГц (USB 48 МГц) — ТЗ п. 3.7.1.
 
 [profiles.F411CE]
 mcu = "STM32F411CE"

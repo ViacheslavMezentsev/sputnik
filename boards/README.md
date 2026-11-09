@@ -18,4 +18,5 @@ boards/
   H723VG/
 ```
 
+Модули стенда, выводы и DMA — п. 3.5–3.7 [ТЗ](../docs/TECHNICAL_SPECIFICATION.md), провода — [WIRING](../docs/WIRING.md).
 Сейчас это заготовки: Configure с ними не проверялся.

@@ -31,6 +31,32 @@ stm32-cmake закреплён на коммите, проверенном в CI
 | Папка подмодуля пустая | `git submodule update --init` |
 | `git status` показывает `modified: modules/… (new commits)` | Подмодуль переключили случайно: `git submodule update` вернёт закреплённый коммит |
 
+## Подготовка карт microSD
+
+Карты стенда — microSD 4 ГБ (SDHC), FAT32, кластер 32 КиБ (ТЗ, п. 3.5.3). Форматирование
+**стирает всё на карте**: сначала проверьте букву диска.
+
+Способ 1 (рекомендуется): программа SD Card Formatter от SD Association, «Quick format».
+Для карт 4–32 ГБ она создаёт FAT32 с разметкой по стандарту SD.
+
+Способ 2 (PS, от администратора; `E:` — буква карты):
+
+```powershell
+Get-Volume -DriveLetter E                       # убедиться, что это карта 4 ГБ
+format E: /FS:FAT32 /A:32K /Q /V:SPUTNIK
+New-Item -ItemType Directory -Force E:\Garmin\BirdsEye, E:\SPUTNIK\TRACKS, E:\SPUTNIK\ROUTES, E:\SPUTNIK\CACHE
+```
+
+Проверить ФС и кластер: `chkdsk E:` (строка «байт в каждой единице распределения» — 32 768)
+или `Get-Volume -DriveLetter E` (FileSystem — FAT32). Каталоги прошивка создаёт сама (ТЗ,
+п. 8.4.3), но для копирования карт с ПК удобно создать их сразу. Имена каталогов
+предварительные (вопрос 13.2.14).
+
+| Проблема | Решение |
+| --- | --- |
+| Windows предлагает только exFAT или NTFS | Это GUI проводника для больших карт; для 4 ГБ — `format … /FS:FAT32` или SD Card Formatter |
+| Карта не определяется на стенде F411 | Модуль Catalex питается от 5V, не от 3V3 (docs/WIRING.md) |
+
 ## Проверка ТЗ
 
 ```sh
