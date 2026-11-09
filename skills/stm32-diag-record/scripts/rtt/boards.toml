@@ -1,0 +1,119 @@
+# Параметры стендов для режима --backend rtt-timer (аддитивная заглушка на свободном таймере).
+#
+# Заглушка одна на все платы; здесь — только то, что различается: ядро, регистр VTOR, свободный таймер и
+# его регистры, номер прерывания, регистр включения тактирования и приблизительная тактовая частота таймера
+# (точное время берётся из метки tick в каждом кадре, поэтому частота нужна лишь примерно).
+#
+# Поддержаны Cortex-M3/M4 из стендов stm32-gdbtest. Cortex-M0 (f030r8) не поддержан: у него нет VTOR,
+# перенести таблицу векторов в SRAM нельзя.
+#
+# tim_clock_hz — ориентир тактовой частоты таймера при типовой настройке стенда; переопределяется
+# ключом --timer-clock-hz. Таймер по умолчанию TIM2 (свободен у зонда и типовых прошивок стендов);
+# при занятом TIM2 выберите другой ключом --timer (TIM3/TIM4/TIM5) из таблицы [timers] ниже.
+
+[defaults]
+vtor = 0xE000ED08
+ram_base = 0x20000000           # начало SRAM; образ должен уместиться в [ram_base, ram_base+ram_kib*1024]
+nvic_iser_base = 0xE000E100     # ISER0; бит IRQ = irq % 32, регистр = irq // 32
+# Свободный таймер общего назначения выбирается ключом --timer (по умолчанию TIM2). Раскладка регистров
+# одинакова у всех таймеров общего назначения F1/F4/AT32, различаются только база, номер IRQ и бит
+# тактирования в APB1ENR. Если таймер по умолчанию занят прошивкой (пример — stm32-hwtest-blackpill
+# использует TIM2), выберите свободный: --timer TIM3/TIM4/TIM5 (доктор покажет, какой свободен).
+default_timer = "TIM2"
+reg_cr1 = 0x00
+reg_dier = 0x0C
+reg_sr = 0x10
+reg_egr = 0x14
+reg_psc = 0x28
+reg_arr = 0x2C
+bit_cen = 0x0001
+bit_uie = 0x0001
+bit_ug = 0x0001
+
+# Таймеры: база, глобальный IRQ, бит <TIMx>EN в APB1ENR (у G4 — APB1ENR1). База, IRQ и бит у F1, F4, G4 и AT32
+# совпадают; какие таймеры есть у платы, задаёт её ключ timers (доктор проверяет только их).
+[timers.TIM2]
+base = 0x40000000
+irq = 28
+rcc_bit = 0x00000001
+[timers.TIM3]
+base = 0x40000400
+irq = 29
+rcc_bit = 0x00000002
+[timers.TIM4]
+base = 0x40000800
+irq = 30
+rcc_bit = 0x00000004
+[timers.TIM5]
+base = 0x40000C00
+irq = 50
+rcc_bit = 0x00000008
+
+[f103c8]
+core = "cortex-m3"
+mcu = "STM32F103C8"
+ram_kib = 20
+rcc_enable_reg = 0x4002101C     # RCC_APB1ENR (RCC @ 0x40021000 + 0x1C)
+rcc_enable_bit = 0x00000001     # TIM2EN
+tim_clock_hz = 72000000
+rcc_cfgr = 0x40021004
+ppre1_shift = 8
+timers = ["TIM2", "TIM3", "TIM4"]   # TIM5 у F103C8 нет
+
+[f401cc]
+core = "cortex-m4"
+mcu = "STM32F401CC"
+ram_kib = 64
+rcc_enable_reg = 0x40023840     # RCC_APB1ENR
+rcc_enable_bit = 0x00000001
+tim_clock_hz = 84000000
+rcc_cfgr = 0x40023808
+ppre1_shift = 10
+
+[f411ce]
+core = "cortex-m4"
+mcu = "STM32F411CE"
+ram_kib = 128
+rcc_enable_reg = 0x40023840
+rcc_enable_bit = 0x00000001
+tim_clock_hz = 100000000
+rcc_cfgr = 0x40023808
+ppre1_shift = 10
+
+[f429zi]
+core = "cortex-m4"
+mcu = "STM32F429ZI"
+ram_kib = 192
+rcc_enable_reg = 0x40023840
+rcc_enable_bit = 0x00000001
+tim_clock_hz = 90000000
+rcc_cfgr = 0x40023808
+ppre1_shift = 10
+
+[at32f403a]
+core = "cortex-m4"
+mcu = "AT32F403ACGU7"
+ram_kib = 96
+rcc_enable_reg = 0x4002101C     # CRM_APB1EN (раскладка как у F1)
+rcc_enable_bit = 0x00000001
+tim_clock_hz = 120000000
+rcc_cfgr = 0x40021004
+ppre1_shift = 8
+
+# RM0440: RCC @ 0x40021000; APB1ENR1 — смещение 0x58, CFGR — 0x08, PPRE1 — биты 10:8.
+# SRAM1 80 КиБ + SRAM2 16 КиБ + CCM 32 КиБ (псевдоним с 0x20018000) — 128 КиБ подряд.
+# Адреса RCC у G4 другие, чем у F4: брать их «по сходству» с F4 нельзя — проверки занятости читали бы не тот регистр.
+[g474ce]
+core = "cortex-m4"
+mcu = "STM32G474CE"
+ram_kib = 128
+rcc_enable_reg = 0x40021058     # RCC_APB1ENR1
+rcc_enable_bit = 0x00000001     # TIM2EN
+tim_clock_hz = 170000000
+rcc_cfgr = 0x40021008           # RCC_CFGR
+ppre1_shift = 8
+
+[f030r8]
+core = "cortex-m0"
+mcu = "STM32F030R8"
+unsupported = "Cortex-M0 без VTOR: перенос таблицы векторов в SRAM невозможен"

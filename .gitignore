@@ -1,0 +1,60 @@
+# Сборка и кэши
+/build/
+/artifacts/
+/out/
+/CMakeUserPresets.json
+/.cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mxproject
+*.bak
+*.tmp
+
+# Прошивки и отладочные образы
+*.hex
+*.bin
+*.elf
+*.map
+*.srec
+*.axf
+*.lst
+
+# Логи и записи оборудования
+*.log
+*.sr
+*.mcap
+*.bag
+*.vcd
+/logs/
+
+# Личные настройки стенда: серийники отладчиков, пути, адреса
+*.local.toml
+*-remote.toml
+remote.toml
+/hil/*/stands/local.toml
+/.vscode/*.log
+/.vscode/browse.vc.db*
+/.cortex-debug*
+
+# Карты и треки. Маленькие тестовые файлы — только в tests/data/
+*.jnx
+*.gpx
+*.kml
+*.kmz
+*.fit
+!/tests/data/**/*.jnx
+!/tests/data/**/*.gpx
+
+# Скачанные утилиты и архивы
+/tools/downloads/
+*.zip
+*.7z
+*.tar.gz
+
+# Локальные исследования (правила — docs/research/README.md, если есть)
+/docs/research/
+/tests/sandbox/
+
+# Клон агента лежит рядом с репозиторием, а не внутри
+/.work/

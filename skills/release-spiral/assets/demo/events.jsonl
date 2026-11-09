@@ -1,0 +1,125 @@
+{"t0": "2026-09-01T06:59:29+00:00", "t1": "2026-09-01T07:29:29+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 1.0"}
+{"t0": "2026-09-01T08:05:54+00:00", "t1": "2026-09-01T08:35:54+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 1.1"}
+{"t0": "2026-09-01T09:28:50+00:00", "t1": "2026-09-01T09:58:50+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 1.2"}
+{"t0": "2026-09-03T05:26:59+00:00", "t1": "2026-09-03T05:32:23+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 324, "subject": "SCENARIO_35"}
+{"t0": "2026-09-03T06:57:54+00:00", "t1": "2026-09-03T07:27:54+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 2.0"}
+{"t0": "2026-09-03T13:08:06+00:00", "t1": "2026-09-03T13:38:06+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 2.2"}
+{"t0": "2026-09-04T04:58:45+00:00", "t1": "2026-09-04T05:28:45+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 2.1"}
+{"t0": "2026-09-04T06:25:56+00:00", "t1": "2026-09-04T06:26:35+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 39, "subject": "SCENARIO_10"}
+{"t0": "2026-09-04T07:57:00+00:00", "t1": "2026-09-04T08:02:30+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 330, "subject": "SCENARIO_25"}
+{"t0": "2026-09-04T10:45:58+00:00", "t1": "2026-09-04T10:54:00+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 482, "subject": "SCENARIO_27"}
+{"t0": "2026-09-04T13:13:23+00:00", "t1": "2026-09-04T13:43:23+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 2.3"}
+{"t0": "2026-09-08T04:37:05+00:00", "t1": "2026-09-08T04:50:16+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 791, "subject": "SCENARIO_12"}
+{"t0": "2026-09-08T07:37:36+00:00", "t1": "2026-09-08T08:07:36+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.0"}
+{"t0": "2026-09-08T10:51:29+00:00", "t1": "2026-09-08T11:21:29+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.3"}
+{"t0": "2026-09-08T12:12:02+00:00", "t1": "2026-09-08T12:15:39+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 217, "subject": "SCENARIO_38"}
+{"t0": "2026-09-08T12:22:00+00:00", "t1": "2026-09-08T12:23:11+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 71, "subject": "SCENARIO_16"}
+{"t0": "2026-09-08T12:39:45+00:00", "t1": "2026-09-08T13:09:45+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.6"}
+{"t0": "2026-09-08T12:47:05+00:00", "t1": "2026-09-08T12:47:56+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 51, "subject": "SCENARIO_04"}
+{"t0": "2026-09-09T05:04:44+00:00", "t1": "2026-09-09T05:19:17+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 873, "subject": "SCENARIO_28"}
+{"t0": "2026-09-09T07:12:06+00:00", "t1": "2026-09-09T07:17:53+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 347, "subject": "SCENARIO_18"}
+{"t0": "2026-09-09T09:03:47+00:00", "t1": "2026-09-09T09:04:31+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 44, "subject": "SCENARIO_18"}
+{"t0": "2026-09-09T09:38:49+00:00", "t1": "2026-09-09T10:08:49+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.4"}
+{"t0": "2026-09-09T10:26:20+00:00", "t1": "2026-09-09T10:56:20+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.1"}
+{"t0": "2026-09-09T10:58:54+00:00", "t1": "2026-09-09T11:00:34+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 100, "subject": "SCENARIO_12"}
+{"t0": "2026-09-10T04:31:14+00:00", "t1": "2026-09-10T04:45:11+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 837, "subject": "SCENARIO_37"}
+{"t0": "2026-09-10T04:52:55+00:00", "t1": "2026-09-10T05:22:55+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.5"}
+{"t0": "2026-09-10T07:02:16+00:00", "t1": "2026-09-10T07:03:05+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 49, "subject": "SCENARIO_02"}
+{"t0": "2026-09-10T07:14:14+00:00", "t1": "2026-09-10T07:18:55+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 281, "subject": "SCENARIO_17"}
+{"t0": "2026-09-10T08:20:07+00:00", "t1": "2026-09-10T08:24:11+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 244, "subject": "SCENARIO_17"}
+{"t0": "2026-09-10T08:31:11+00:00", "t1": "2026-09-10T08:33:59+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 168, "subject": "SCENARIO_28"}
+{"t0": "2026-09-10T10:21:22+00:00", "t1": "2026-09-10T10:51:22+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 3.2"}
+{"t0": "2026-09-10T10:34:04+00:00", "t1": "2026-09-10T10:43:28+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 564, "subject": "SCENARIO_32"}
+{"t0": "2026-09-15T06:57:20+00:00", "t1": "2026-09-15T07:27:20+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.8"}
+{"t0": "2026-09-15T08:16:45+00:00", "t1": "2026-09-15T08:46:45+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.0"}
+{"t0": "2026-09-15T10:22:07+00:00", "t1": "2026-09-15T10:27:47+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 340, "subject": "SCENARIO_09"}
+{"t0": "2026-09-15T10:52:56+00:00", "t1": "2026-09-15T10:57:42+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 286, "subject": "SCENARIO_16"}
+{"t0": "2026-09-15T11:10:08+00:00", "t1": "2026-09-15T11:40:08+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.4"}
+{"t0": "2026-09-16T07:24:47+00:00", "t1": "2026-09-16T07:54:47+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.1"}
+{"t0": "2026-09-16T09:37:03+00:00", "t1": "2026-09-16T10:07:03+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.9"}
+{"t0": "2026-09-16T09:38:31+00:00", "t1": "2026-09-16T09:49:52+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 681, "subject": "SCENARIO_30"}
+{"t0": "2026-09-16T09:53:14+00:00", "t1": "2026-09-16T10:23:14+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.5"}
+{"t0": "2026-09-16T11:55:28+00:00", "t1": "2026-09-16T12:01:07+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 339, "subject": "SCENARIO_13"}
+{"t0": "2026-09-17T05:07:47+00:00", "t1": "2026-09-17T05:16:59+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 552, "subject": "SCENARIO_17"}
+{"t0": "2026-09-17T05:14:23+00:00", "t1": "2026-09-17T05:44:23+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.2"}
+{"t0": "2026-09-17T07:58:12+00:00", "t1": "2026-09-17T08:28:12+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.6"}
+{"t0": "2026-09-17T09:34:16+00:00", "t1": "2026-09-17T09:38:09+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 233, "subject": "SCENARIO_10"}
+{"t0": "2026-09-17T11:23:38+00:00", "t1": "2026-09-17T11:29:23+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 345, "subject": "SCENARIO_05"}
+{"t0": "2026-09-18T04:33:51+00:00", "t1": "2026-09-18T04:34:47+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 56, "subject": "SCENARIO_03"}
+{"t0": "2026-09-18T05:02:05+00:00", "t1": "2026-09-18T05:04:03+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 118, "subject": "SCENARIO_24"}
+{"t0": "2026-09-18T05:43:26+00:00", "t1": "2026-09-18T05:48:53+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 327, "subject": "SCENARIO_19"}
+{"t0": "2026-09-18T07:41:37+00:00", "t1": "2026-09-18T07:47:58+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 381, "subject": "SCENARIO_06"}
+{"t0": "2026-09-18T07:47:32+00:00", "t1": "2026-09-18T07:56:18+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 526, "subject": "SCENARIO_18"}
+{"t0": "2026-09-18T08:29:01+00:00", "t1": "2026-09-18T08:38:37+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 576, "subject": "SCENARIO_32"}
+{"t0": "2026-09-18T08:58:25+00:00", "t1": "2026-09-18T09:28:25+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.7"}
+{"t0": "2026-09-18T09:43:45+00:00", "t1": "2026-09-18T10:13:45+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 4.3"}
+{"t0": "2026-09-18T09:51:04+00:00", "t1": "2026-09-18T10:03:34+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 750, "subject": "SCENARIO_35"}
+{"t0": "2026-09-18T10:00:20+00:00", "t1": "2026-09-18T10:04:59+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 279, "subject": "SCENARIO_34"}
+{"t0": "2026-09-18T11:58:09+00:00", "t1": "2026-09-18T12:08:10+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 601, "subject": "SCENARIO_22"}
+{"t0": "2026-09-18T12:34:33+00:00", "t1": "2026-09-18T12:47:07+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 754, "subject": "SCENARIO_01"}
+{"t0": "2026-09-18T12:48:42+00:00", "t1": "2026-09-18T13:01:38+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 776, "subject": "SCENARIO_23"}
+{"t0": "2026-09-22T04:41:27+00:00", "t1": "2026-09-22T04:50:28+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 541, "subject": "SCENARIO_06"}
+{"t0": "2026-09-22T06:07:55+00:00", "t1": "2026-09-22T06:37:55+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.4"}
+{"t0": "2026-09-22T06:19:20+00:00", "t1": "2026-09-22T06:49:20+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.0"}
+{"t0": "2026-09-22T08:43:25+00:00", "t1": "2026-09-22T08:56:16+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 771, "subject": "SCENARIO_26"}
+{"t0": "2026-09-22T08:46:05+00:00", "t1": "2026-09-22T08:51:49+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 344, "subject": "SCENARIO_01"}
+{"t0": "2026-09-22T09:08:03+00:00", "t1": "2026-09-22T09:38:03+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.6"}
+{"t0": "2026-09-22T09:15:22+00:00", "t1": "2026-09-22T09:45:22+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.2"}
+{"t0": "2026-09-22T10:32:02+00:00", "t1": "2026-09-22T10:39:04+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 422, "subject": "SCENARIO_03"}
+{"t0": "2026-09-23T04:57:14+00:00", "t1": "2026-09-23T05:02:12+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 298, "subject": "SCENARIO_35"}
+{"t0": "2026-09-23T05:41:27+00:00", "t1": "2026-09-23T06:11:27+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.3"}
+{"t0": "2026-09-23T06:35:35+00:00", "t1": "2026-09-23T06:40:37+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 302, "subject": "SCENARIO_16"}
+{"t0": "2026-09-23T07:53:58+00:00", "t1": "2026-09-23T08:08:34+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 876, "subject": "SCENARIO_01"}
+{"t0": "2026-09-23T10:16:02+00:00", "t1": "2026-09-23T10:46:02+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.1"}
+{"t0": "2026-09-23T11:17:22+00:00", "t1": "2026-09-23T11:21:15+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 233, "subject": "SCENARIO_08"}
+{"t0": "2026-09-23T12:01:16+00:00", "t1": "2026-09-23T12:14:41+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 805, "subject": "SCENARIO_28"}
+{"t0": "2026-09-23T13:24:08+00:00", "t1": "2026-09-23T13:54:08+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 5.5"}
+{"t0": "2026-09-28T04:52:42+00:00", "t1": "2026-09-28T05:22:42+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 6.0"}
+{"t0": "2026-09-28T05:02:26+00:00", "t1": "2026-09-28T05:04:54+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 148, "subject": "SCENARIO_15"}
+{"t0": "2026-09-28T06:56:07+00:00", "t1": "2026-09-28T07:26:07+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 6.1"}
+{"t0": "2026-09-28T07:13:54+00:00", "t1": "2026-09-28T07:21:46+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 472, "subject": "SCENARIO_17"}
+{"t0": "2026-09-28T10:42:42+00:00", "t1": "2026-09-28T10:46:50+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 248, "subject": "SCENARIO_15"}
+{"t0": "2026-09-28T11:03:57+00:00", "t1": "2026-09-28T11:09:09+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 312, "subject": "SCENARIO_25"}
+{"t0": "2026-09-28T11:49:06+00:00", "t1": "2026-09-28T11:55:52+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 406, "subject": "SCENARIO_17"}
+{"t0": "2026-09-28T12:01:29+00:00", "t1": "2026-09-28T12:03:47+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 138, "subject": "SCENARIO_20"}
+{"t0": "2026-09-28T12:41:38+00:00", "t1": "2026-09-28T13:11:38+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 6.2"}
+{"t0": "2026-10-01T05:40:13+00:00", "t1": "2026-10-01T05:49:32+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 559, "subject": "SCENARIO_10"}
+{"t0": "2026-10-01T09:23:58+00:00", "t1": "2026-10-01T09:53:58+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 7.2"}
+{"t0": "2026-10-01T11:18:31+00:00", "t1": "2026-10-01T11:31:25+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 774, "subject": "SCENARIO_26"}
+{"t0": "2026-10-01T12:12:20+00:00", "t1": "2026-10-01T12:42:20+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 7.0"}
+{"t0": "2026-10-02T05:57:44+00:00", "t1": "2026-10-02T06:11:31+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 827, "subject": "SCENARIO_15"}
+{"t0": "2026-10-02T08:04:43+00:00", "t1": "2026-10-02T08:05:47+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 64, "subject": "SCENARIO_30"}
+{"t0": "2026-10-02T08:26:15+00:00", "t1": "2026-10-02T08:33:50+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 455, "subject": "SCENARIO_31"}
+{"t0": "2026-10-02T10:01:13+00:00", "t1": "2026-10-02T10:02:48+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 95, "subject": "SCENARIO_20"}
+{"t0": "2026-10-02T11:15:03+00:00", "t1": "2026-10-02T11:45:03+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 7.1"}
+{"t0": "2026-10-05T05:24:57+00:00", "t1": "2026-10-05T05:54:57+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 8.0"}
+{"t0": "2026-10-05T05:44:24+00:00", "t1": "2026-10-05T05:58:41+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 857, "subject": "SCENARIO_20"}
+{"t0": "2026-10-05T08:33:04+00:00", "t1": "2026-10-05T08:33:41+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 37, "subject": "SCENARIO_13"}
+{"t0": "2026-10-05T11:12:21+00:00", "t1": "2026-10-05T11:42:21+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 8.1"}
+{"t0": "2026-10-05T11:25:47+00:00", "t1": "2026-10-05T11:35:15+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 568, "subject": "SCENARIO_08"}
+{"t0": "2026-10-06T04:54:36+00:00", "t1": "2026-10-06T04:58:14+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 218, "subject": "SCENARIO_30"}
+{"t0": "2026-10-06T05:43:23+00:00", "t1": "2026-10-06T05:51:11+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 468, "subject": "SCENARIO_22"}
+{"t0": "2026-10-06T05:54:23+00:00", "t1": "2026-10-06T06:24:23+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 9.0"}
+{"t0": "2026-10-06T06:33:39+00:00", "t1": "2026-10-06T06:47:39+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 840, "subject": "SCENARIO_39"}
+{"t0": "2026-10-06T08:08:25+00:00", "t1": "2026-10-06T08:09:15+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 50, "subject": "SCENARIO_09"}
+{"t0": "2026-10-06T08:46:14+00:00", "t1": "2026-10-06T08:53:13+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 419, "subject": "SCENARIO_09"}
+{"t0": "2026-10-06T09:16:52+00:00", "t1": "2026-10-06T09:28:17+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 685, "subject": "SCENARIO_06"}
+{"t0": "2026-10-06T10:04:48+00:00", "t1": "2026-10-06T10:16:40+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 712, "subject": "SCENARIO_22"}
+{"t0": "2026-10-06T12:19:03+00:00", "t1": "2026-10-06T12:30:07+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 664, "subject": "SCENARIO_08"}
+{"t0": "2026-10-12T05:00:00+00:00", "t1": "2026-10-12T09:00:00+00:00", "kind": "recording", "source": "manual", "subject": "запись испытания"}
+{"t0": "2026-10-12T08:35:45+00:00", "t1": "2026-10-12T09:05:45+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 10.0"}
+{"t0": "2026-10-12T12:01:35+00:00", "t1": "2026-10-12T12:31:35+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 10.2"}
+{"t0": "2026-10-12T12:03:48+00:00", "t1": "2026-10-12T12:33:48+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 10.1"}
+{"t0": "2026-10-14T04:30:49+00:00", "t1": "2026-10-14T04:40:12+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 563, "subject": "SCENARIO_20"}
+{"t0": "2026-10-14T04:42:25+00:00", "t1": "2026-10-14T04:46:25+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 240, "subject": "SCENARIO_06"}
+{"t0": "2026-10-14T06:09:58+00:00", "t1": "2026-10-14T06:10:52+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 54, "subject": "SCENARIO_33"}
+{"t0": "2026-10-14T06:10:15+00:00", "t1": "2026-10-14T06:14:41+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 266, "subject": "SCENARIO_20"}
+{"t0": "2026-10-14T06:17:16+00:00", "t1": "2026-10-14T06:29:59+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 763, "subject": "SCENARIO_11"}
+{"t0": "2026-10-14T07:33:58+00:00", "t1": "2026-10-14T07:39:59+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 361, "subject": "SCENARIO_10"}
+{"t0": "2026-10-14T10:00:37+00:00", "t1": "2026-10-14T10:30:37+00:00", "kind": "commit", "source": "git", "subject": "feat: шаг 11.0"}
+{"t0": "2026-10-14T10:40:38+00:00", "t1": "2026-10-14T10:44:38+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 240, "subject": "SCENARIO_13"}
+{"t0": "2026-10-14T10:53:41+00:00", "t1": "2026-10-14T11:07:20+00:00", "kind": "run", "source": "hil", "status": "FAIL", "seconds": 819, "subject": "SCENARIO_30"}
+{"t0": "2026-10-14T10:58:04+00:00", "t1": "2026-10-14T11:05:34+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 450, "subject": "SCENARIO_18"}
+{"t0": "2026-10-14T11:02:47+00:00", "t1": "2026-10-14T11:10:58+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 491, "subject": "SCENARIO_36"}
+{"t0": "2026-10-14T12:16:52+00:00", "t1": "2026-10-14T12:29:51+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 779, "subject": "SCENARIO_22"}
+{"t0": "2026-10-14T12:43:53+00:00", "t1": "2026-10-14T12:54:58+00:00", "kind": "run", "source": "hil", "status": "PASS", "seconds": 665, "subject": "SCENARIO_13"}

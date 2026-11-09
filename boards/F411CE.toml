@@ -1,0 +1,18 @@
+# Профиль платы WeAct BlackPill V3.1, STM32F411CEU6 (512 КиБ Flash, 128 КиБ RAM).
+# Заготовка: Configure с этим профилем ещё не проверялся, проекта CubeMX ещё нет.
+# Формат — именованный профиль stm32-cmake-yml 0.10.x (TOML). Выбор профиля —
+# STM32_YML_PROFILE=F411CE в CMakePresets.json; подключение — include в stm32_config.toml.
+# В именах профилей не используется "_" (ограничение stm32-cmake-yml 0.9.x/0.10.x).
+#
+# Сведения о плате (README и схема WeAct, не проверены на образце):
+#   кварцы 25 МГц и 32,768 кГц; кнопка пользователя KEY (PA0); светодиод PC13;
+#   USB Type-C (OTG FS); площадка под SPI Flash (по умолчанию не установлена).
+# Периферия навигатора (экран, GNSS, SD, кнопки, питание) не выбрана:
+# docs/TECHNICAL_SPECIFICATION.md, раздел 13.
+
+[profiles.F411CE]
+mcu = "STM32F411CE"
+# Пакет STM32CubeF4, проверенный в stm32-hwtest-blackpill (CMSIS из V1.28.3).
+cubefw_package = "V1.28.3"
+# Появится вместе с проектом CubeMX (следующий этап):
+# ioc_file = "boards/F411CE/sputnik-F411CE.ioc"

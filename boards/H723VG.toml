@@ -1,0 +1,18 @@
+# Профиль платы WeAct STM32H723 Core Board, STM32H723VGT6 (1024 КиБ Flash, 564 КиБ RAM).
+# Заготовка: Configure с этим профилем ещё не проверялся, проекта CubeMX ещё нет.
+# Формат — именованный профиль stm32-cmake-yml 0.10.x (TOML). Выбор профиля —
+# STM32_YML_PROFILE=H723VG в CMakePresets.json; подключение — include в stm32_config.toml.
+# Ядро M7 у одноядерных H7 stm32-cmake-yml выбирает сам (mcu_core не задаётся).
+#
+# Сведения о плате (README WeAct, не проверены на образце):
+#   экран 0,96" ST7735 TFT; слот microSD (TF); 8 МБ SPI Flash (SPI1); 8 МБ OSPI Flash (OSPI1);
+#   порт DVP 8 бит; кнопка пользователя K1 (PC13); USB Type-C.
+# Периферия навигатора (экран, GNSS, SD, кнопки, питание) не выбрана:
+# docs/TECHNICAL_SPECIFICATION.md, раздел 13.
+
+[profiles.H723VG]
+mcu = "STM32H723VG"
+# Пакет STM32CubeH7, закреплённый в CI stm32-cmake-yml 0.10.2; выбор версии — вопрос 13.2.13 ТЗ.
+cubefw_package = "V1.13.0"
+# Появится вместе с проектом CubeMX (следующий этап):
+# ioc_file = "boards/H723VG/sputnik-H723VG.ioc"

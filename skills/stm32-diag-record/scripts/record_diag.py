@@ -1,0 +1,495 @@
+#!/usr/bin/env python3
+"""Запись диагностики с платы без ROS: SWD-пробник -> OpenOCD (или Renode) -> файл bag или mcap.
+
+НАЗНАЧЕНИЕ. Снять выбранные поля прошивки в файл для офлайн-разбора (PlotJuggler, `mcap info`,
+`rosbag info`). ROS не нужен ни для записи, ни для чтения: форматы пишут `bag_writer.py` и
+`mcap_writer.py` на стандартной библиотеке.
+
+ЦЕПОЧКА. Пробник SWD (ST-Link, CMSIS-DAP, J-Link и др.) -> OpenOCD (telnet) -> чтение 32-битных слов по адресам -> сериализация
+сообщений -> файл. Адреса считаются офлайн по ELF (и SVD), плата при этом не нужна. OpenOCD
+подключается без сброса: прошивка продолжает работать (сброс — только по ключу --reset).
+
+ДРУГИЕ MCU. Cortex-M не только STM32: пробник и цель задаются конфигурациями OpenOCD (--interface,
+--target, --openocd-command), совместимость проверяет --doctor с теми же ключами.
+
+БЕЗ ПЛАТЫ. `--backend renode` читает те же адреса из работающего Renode через его telnet-монитор
+(`renode --port 1234`, команда `sysbus ReadDoubleWord`); Renode запускается отдельно.
+
+КЛЮЧИ СОВПАДАЮТ С НАВЫКОМ stm32-ros-alt-channel там, где смысл общий (--out, --format/--record,
+--seconds, --elf, --svd, --doctor, --dryrun).
+
+ПРИМЕРЫ.
+    python record_diag.py --doctor
+    python record_diag.py --dryrun --seconds 10
+    python record_diag.py --record mcap --seconds 30
+    python record_diag.py --record bag --seconds 30 --compress bz2 --out build/my.bag
+    python record_diag.py --target target/stm32f1x.cfg --serial <серийный номер> --record mcap
+    python record_diag.py --backend renode --port 1234 --record mcap --seconds 10
+    python record_diag.py --interface interface/cmsis-dap.cfg --target target/nrf52.cfg --doctor
+"""
+import argparse
+import json
+import os
+import pathlib
+import re
+import shutil
+import socket
+import struct
+import subprocess
+import sys
+import tempfile
+import time
+
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+
+from openocd_link import Telnet, OpenOcdReader, read_words, WORD_LINE
+from field_values import aligned_needed, word_at, convert
+from process_tools import isolated_process_options, spawn_logged, wait_port, stop_process as stop_openocd
+
+from bag_writer import BagWriter  # noqa: E402
+from mcap_writer import McapWriter  # noqa: E402
+
+KINDS = ("uint32", "int32", "float32", "uint32_seconds")
+DEFAULT_PORTS = {"openocd": 4444, "renode": 1234}
+RENODE_PROMPT = re.compile(r"(?:^|\n)\(([^()\n]*)\) ")
+ADAPTER_HINTS = ("stlink", "st-link", "cmsis-dap", "j-link", "jlink", "serial", "target voltage", "vtarget",
+                 "hardware version", "fw version", "firmware version", "ftdi", "xds110", "picoprobe", "adapter")
+TARGET_ROW = re.compile(r"^\s*\d+\*?\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*$", re.M)
+RENODE_VALUE = re.compile(r"ReadDoubleWord 0x([0-9A-Fa-f]+)[^\n]*\n\s*(0x[0-9A-Fa-f]+)\s*\n")
+
+
+# ---------------------------------------------------------------- окружение
+
+def find_elf(explicit):
+    """ELF из ключа, иначе первый подходящий в build/ текущего каталога."""
+    if explicit:
+        return pathlib.Path(explicit)
+    candidates = sorted(pathlib.Path("build").glob("*/firmware.elf")) + sorted(pathlib.Path("build").glob("*/*.elf"))
+    return candidates[0] if candidates else pathlib.Path("build/firmware.elf")
+
+
+def openocd_base(args):
+    """Пробник, цель и дополнительные команды; сетевые порты только на 127.0.0.1."""
+    command = [args.openocd, "-f", args.interface]
+    if args.serial:
+        command += ["-c", "adapter serial %s" % args.serial]
+    command += ["-f", args.target]
+    for extra in args.openocd_command:
+        command += ["-c", extra]
+    gdb_port = str(args.cleanup_gdb_port) if getattr(args, "backend", "") == "rtt-timer" and not getattr(args, "doctor", False) else "disabled"
+    return command + ["-c", "bindto 127.0.0.1", "-c", "gdb_port " + gdb_port, "-c", "tcl_port disabled"]
+
+
+def openocd_command(args):
+    command = openocd_base(args) + ["-c", "telnet_port %d" % args.port, "-c", "init"]
+    if args.reset:
+        command += ["-c", "reset run"]
+    return command
+
+
+def openocd_probe_command(args, address=None):
+    """Разовая проверка доктора: init, таблица целей, при наличии адреса — одно слово без остановки ядра."""
+    command = openocd_base(args) + ["-c", "telnet_port disabled", "-c", "init", "-c", "targets"]
+    if address is not None:
+        command += ["-c", "mdw 0x%08X" % (address & ~3)]
+    return command + ["-c", "shutdown"]
+
+
+def parse_openocd(text):
+    """Разбор вывода OpenOCD для доктора: пробник, ядро, цели, ошибки, прочитанное слово."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    result = {
+        "missing": re.findall(r"Can't find (\S+)", text),
+        "errors": [line for line in lines if "Error:" in line],
+        "adapter": [line for line in lines if line.startswith(("Info", "Warn")) and
+                    any(hint in line.lower() for hint in ADAPTER_HINTS)],
+        "core": None, "targets": [], "word": None,
+    }
+    core = re.search(r"(Cortex-M\S*)(?:\s+r\d+p\d+)?\s+processor detected", text)
+    if core:
+        result["core"] = core.group(1)
+    if "TargetName" in text:
+        result["targets"] = [{"name": name, "type": kind, "state": state}
+                             for name, kind, state in TARGET_ROW.findall(text.split("TargetName", 1)[1])]
+    word = WORD_LINE.search(text)
+    if word:
+        result["word"] = (int(word.group(1), 16), int(word.group(2).split()[0], 16))
+    result["examined"] = "Examination succeed" in text or any(
+        target["state"] in ("running", "halted", "reset") for target in result["targets"])
+    return result
+
+
+# ---------------------------------------------------------------- адреса
+
+def resolve(args, elf, out_dir):
+    """Пересчитать адреса по ELF и SVD (офлайн). Возвращает файл адресов и список полей."""
+    out = pathlib.Path(args.addresses) if args.addresses else out_dir / "addresses.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    command = [sys.executable, str(HERE / "resolve_addresses.py"), "--elf", str(elf.resolve()),
+               "--spec", str(pathlib.Path(args.fields).resolve()), "--out", str(out.resolve())]
+    if args.svd:
+        command += ["--svd", str(pathlib.Path(args.svd).resolve())]
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0 or not out.is_file():
+        raise SystemExit("не удалось вычислить адреса:\n%s" % (result.stdout + result.stderr)[-700:])
+    fields = json.loads(out.read_text(encoding="utf-8"))["fields"]
+    for field in fields:
+        kind = field.get("kind", "uint32")
+        if kind not in KINDS:
+            raise SystemExit("поле %s: неизвестный kind %r (допустимы: %s)" % (field["topic"], kind, ", ".join(KINDS)))
+    return out, fields
+
+
+# ---------------------------------------------------------------- OpenOCD
+
+def start_openocd(args, log_path):
+    if args.use_running:
+        return None
+    process = spawn_logged(openocd_command(args), log_path)
+    try:
+        if wait_port(args.host, args.port, process):
+            return process
+    except BaseException:
+        stop_openocd(process)
+        raise
+    stop_openocd(process)
+    raise SystemExit("OpenOCD не поднялся на порт %d (журнал: %s)" % (args.port, log_path))
+
+
+
+class RenodeReader(object):
+    """Чтение слов через telnet-монитор Renode: эмуляция при этом не останавливается.
+
+    Команды `sysbus ReadDoubleWord` отправляются пакетом, ответы разбираются по эху адреса.
+    """
+
+    def __init__(self, host, port, machine="", timeout=2.0):
+        self.sock = socket.create_connection((host, port), timeout=10)
+        self.sock.settimeout(timeout)
+        time.sleep(0.3)
+        self._drain()  # приветствие и вывод команд, выполненных до подключения
+        if machine:
+            self.sock.sendall(('mach set "%s"\n' % machine).encode("utf-8"))
+        else:
+            self.sock.sendall(b"\n")
+        text = self._read_prompts(1)
+        names = RENODE_PROMPT.findall(text or "")
+        self.machine = names[-1] if names else ""
+        if not self.machine:
+            self.close()
+            raise SystemExit("монитор Renode не ответил на %s:%d" % (host, port))
+        if self.machine == "monitor":
+            self.close()
+            raise SystemExit("в мониторе Renode не выбрана машина: --machine ИМЯ (как в mach create)")
+
+    def _drain(self):
+        self.sock.settimeout(0.2)
+        try:
+            while self.sock.recv(65536):
+                pass
+        except socket.timeout:
+            pass
+        finally:
+            self.sock.settimeout(2.0)
+
+    def _read_prompts(self, count):
+        """Текст до `count` приглашений вида '(машина) ' или до тайм-аута."""
+        data = b""
+        while True:
+            text = Telnet._clean(data)
+            if len(RENODE_PROMPT.findall(text)) >= count:
+                return text
+            try:
+                chunk = self.sock.recv(65536)
+            except socket.timeout:
+                return text
+            if not chunk:
+                raise ConnectionError("Renode закрыл соединение")
+            data += chunk
+
+    def read_words(self, addresses):
+        pending = sorted(set(addresses))
+        lines = "".join("sysbus ReadDoubleWord 0x%08X\n" % address for address in pending)
+        self.sock.sendall(lines.encode("ascii"))
+        text = self._read_prompts(len(pending))
+        return {int(address, 16): int(value, 16) for address, value in RENODE_VALUE.findall(text)}
+
+    def close(self):
+        self.sock.close()
+
+
+def open_reader(args):
+    if args.backend == "renode":
+        return RenodeReader(args.host, args.port, args.machine)
+    return OpenOcdReader(args.host, args.port)
+
+
+# ---------------------------------------------------------------- доктор
+
+def doctor(args):
+    """Совместимость окружения, пробника и цели с теми же ключами, что и у записи.
+
+    Ядро не останавливается и не сбрасывается (если конфигурация цели сама не сбрасывает при подключении).
+    """
+    checks = [("Python 3.9+", sys.version_info >= (3, 9), sys.version.split()[0])]
+    elf = find_elf(args.elf)
+    checks.append(("ELF прошивки", elf.is_file(), str(elf)))
+    checks.append(("Спецификация полей", pathlib.Path(args.fields).is_file(), str(args.fields)))
+    checks.append(("SVD (только для полей svd:)", True, str(args.svd or "не задан: поля svd: недоступны")))
+    address = None
+    if elf.is_file() and pathlib.Path(args.fields).is_file():
+        try:
+            saved, args.addresses = args.addresses, ""
+            try:
+                with tempfile.TemporaryDirectory() as work:
+                    _out, fields = resolve(args, elf, pathlib.Path(work))
+            finally:
+                args.addresses = saved
+            address = fields[0]["address"] if fields else None
+            checks.append(("Адреса полей (GDB по ELF)", bool(fields), "полей %d, первое %s = 0x%08X"
+                           % (len(fields), fields[0]["topic"], address) if fields else "полей нет"))
+        except SystemExit as error:
+            checks.append(("Адреса полей (GDB по ELF)", False, str(error).splitlines()[-1]))
+
+    details = []
+    if args.backend == "renode":
+        name = "Монитор Renode %s:%d" % (args.host, args.port)
+        try:
+            reader = RenodeReader(args.host, args.port, args.machine)
+            checks.append((name, True, "машина %s" % reader.machine))
+            if address is not None:
+                words = reader.read_words(aligned_needed(address))
+                value = word_at(words, address)
+                checks.append(("Чтение памяти на ходу", value is not None,
+                               "0x%08X = 0x%08X" % (address, value) if value is not None else "нет ответа"))
+            reader.close()
+        except (OSError, SystemExit) as error:
+            checks.append((name, False, str(error) if isinstance(error, SystemExit) else
+                           "не слушает: renode --port %d" % args.port))
+    elif not args.openocd:
+        checks.append(("OpenOCD", False, "нет в PATH: --openocd"))
+    elif args.use_running:
+        try:
+            socket.create_connection((args.host, args.port), timeout=1).close()
+            checks.append(("OpenOCD telnet %s:%d" % (args.host, args.port), True, "слушает"))
+        except OSError:
+            checks.append(("OpenOCD telnet %s:%d" % (args.host, args.port), False, "не слушает: --port"))
+    else:
+        checks.append(("OpenOCD", True, args.openocd))
+        try:
+            run = subprocess.run(openocd_probe_command(args, address), capture_output=True, text=True, timeout=60)
+            text = run.stdout + run.stderr
+        except (OSError, subprocess.SubprocessError) as error:
+            text = "Error: openocd не запустился: %s" % error
+        info = parse_openocd(text)
+        checks.append(("Конфигурации OpenOCD", not info["missing"],
+                       "найдены" if not info["missing"] else "нет: %s" % ", ".join(info["missing"])))
+        if not info["missing"]:
+            adapter_error = [line for line in info["errors"] if not info["examined"]]
+            checks.append(("Пробник (%s)" % args.interface, bool(info["adapter"]) or info["examined"],
+                           (info["adapter"] or adapter_error or ["нет ответа"])[0][:70]))
+            state = ", ".join("%s %s" % (t["name"], t["state"]) for t in info["targets"]) or "нет"
+            checks.append(("Цель (%s)" % args.target, info["examined"],
+                           "%s; %s" % (info["core"] or "ядро не определено", state)))
+            if address is not None and info["examined"]:
+                checks.append(("Чтение памяти на ходу", info["word"] is not None,
+                               "0x%08X = 0x%08X" % info["word"] if info["word"] else "mdw не ответил"))
+        details = info["adapter"] + info["errors"]
+
+    print("доктор (%s; ядро не останавливается, плата не сбрасывается):" % args.backend)
+    failed = 0
+    for name, ok, detail in checks:
+        failed += 0 if ok else 1
+        print("  %-34s %-4s %s" % (name, "ок" if ok else "НЕТ", detail[:80]))
+    if details:
+        print("\n  OpenOCD:")
+        for line in details[:12]:
+            print("    " + line[:110])
+    if failed and args.backend == "openocd":
+        print("\n  проверьте --interface, --target, --serial; дополнительные команды OpenOCD — --openocd-command")
+    print("\n  провалено: %d из %d" % (failed, len(checks)))
+    return 0 if failed == 0 else 1
+
+
+# ---------------------------------------------------------------- запись
+
+def record(args, fields, out):
+    writer_class = McapWriter if args.record == "mcap" else BagWriter
+    needed = [a for field in fields for a in aligned_needed(field["address"])]
+    stats = {"cycles": 0, "written": 0, "read_failures": 0, "out_of_range": 0, "interrupted": False}
+    storage = None
+    reader = open_reader(args)
+    try:
+        if args.record == "mcap":
+            storage = writer_class(out, chunk_messages=args.chunk_size)
+        else:
+            storage = writer_class(out, compression=None if args.compress == "none" else args.compress)
+        for field in fields:
+            storage.add_connection(field["topic"], field["message"])
+        print("запись %.0f с, %.0f Гц -> %s" % (args.seconds, args.rate, out.name))
+        period = 1.0 / args.rate
+        started = time.monotonic()
+        try:
+            while time.monotonic() - started < args.seconds:
+                cycle = time.monotonic()
+                words = reader.read_words(needed)
+                moment = time.time()  # метка хоста; для точного времени добавьте счётчик платы в поля
+                stats["cycles"] += 1
+                for field in fields:
+                    word = word_at(words, field["address"])
+                    if word is None:
+                        stats["read_failures"] += 1
+                        continue
+                    value = convert(word, field.get("kind", "uint32"), field.get("shift", 0), field.get("mask", 0xFFFFFFFF),
+                                    field.get("invert", False))
+                    if (field.get("min") is not None and value < field["min"]) or \
+                       (field.get("max") is not None and value > field["max"]):
+                        stats["out_of_range"] += 1
+                        continue
+                    storage.write(field["topic"], value, int(moment), int((moment % 1) * 1e9))
+                    stats["written"] += 1
+                left = period - (time.monotonic() - cycle)
+                if left > 0:
+                    time.sleep(left)
+        except KeyboardInterrupt:
+            stats["interrupted"] = True  # досрочная остановка: записанное сохраняется
+        stats["elapsed"] = time.monotonic() - started
+    finally:
+        if storage is not None:
+            storage.close()
+        reader.close()
+    return stats
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--fields", default=str(HERE / "fields.toml"), help="спецификация полей (TOML)")
+    parser.add_argument("--elf", default=os.environ.get("FIRMWARE_ELF", ""), help="ELF (по умолчанию $FIRMWARE_ELF или build/)")
+    parser.add_argument("--svd", default=os.environ.get("STM32_SVD", ""), help="SVD для полей svd: (по умолчанию $STM32_SVD)")
+    parser.add_argument("--addresses", default="", help="куда сохранить JSON адресов (по умолчанию рядом с записью)")
+    parser.add_argument("--serial", default=os.environ.get("STLINK_SERIAL", ""), help="серийный номер пробника ($STLINK_SERIAL)")
+    parser.add_argument("--interface", default="interface/stlink.cfg", help="конфигурация пробника OpenOCD (stlink, cmsis-dap, jlink, ...)")
+    parser.add_argument("--target", default="target/stm32f4x.cfg", help="конфигурация цели OpenOCD (target/stm32f1x.cfg, target/nrf52.cfg, ...)")
+    parser.add_argument("--openocd-command", action="append", default=[], metavar="CMD",
+                        help="команда OpenOCD после конфигурации цели, до init (можно несколько раз)")
+    parser.add_argument("--reset", action="store_true", help="сбросить цель после подключения (по умолчанию — без сброса)")
+    parser.add_argument("--record", "--format", dest="record", choices=["bag", "mcap"], default="mcap")
+    parser.add_argument("--out", default="", help="файл записи (по умолчанию <каталог ELF>/diag/record-<дата>.<формат>)")
+    parser.add_argument("--seconds", type=float, default=10.0, help="длительность записи")
+    parser.add_argument("--rate", type=float, default=10.0, help="частота опроса, Гц")
+    parser.add_argument("--compress", choices=["none", "bz2"], default="none", help="сжатие чанка bag")
+    parser.add_argument("--chunk-size", type=int, default=1000, help="сообщений на чанк mcap")
+    parser.add_argument("--backend", choices=["openocd", "renode", "rtt-timer"], default="openocd",
+                        help="откуда читать: OpenOCD (плата), монитор Renode (эмуляция) или rtt-timer "
+                             "(аддитивная заглушка на свободном таймере, быстрее; меняет поведение цели)")
+    parser.add_argument("--machine", default="", help="Renode: имя машины, если в мониторе их несколько")
+    # Ключи режима --backend rtt-timer (прототип, Cortex-M3/M4 стендов stm32-gdbtest).
+    parser.add_argument("--board", default="", help="rtt-timer: стенд (f411ce, f103c8, f401cc, f429zi, at32f403a)")
+    parser.add_argument("--timer", default="", help="rtt-timer: свободный таймер TIM2 (по умолч.), TIM3, TIM4, TIM5")
+    parser.add_argument("--sram-base", default="", help="rtt-timer: свободное окно SRAM (hex), напр. 0x2001E000")
+    parser.add_argument("--toolchain", default="", help="rtt-timer: каталог bin тулчейна arm-none-eabi (сборка заглушки)")
+    parser.add_argument("--cleanup-gdb", default="", help="rtt-timer: GDB с Python для снятия перехвата")
+    parser.add_argument("--cleanup-gdb-port", type=int, default=3334, help="rtt-timer: GDB-порт OpenOCD (3334)")
+    parser.add_argument("--buffer", type=int, default=4096, help="rtt-timer: размер кольцевого буфера, байт")
+    parser.add_argument("--timer-clock-hz", type=int, help="rtt-timer: тактовая частота таймера (иначе из boards.toml)")
+    parser.add_argument("--tick-expr", default="&platform_tick",
+                        help="rtt-timer: выражение метки времени (у зонда &platform_tick, у прошивок HAL &uwTick)")
+    parser.add_argument("--tick-address", default="", help="rtt-timer: адрес метки времени (hex) вместо --tick-expr")
+    parser.add_argument("--rtt-poll-ms", type=int, default=10,
+                        help="rtt-timer: период опроса кольца RTT сервером OpenOCD, мс (меньше — выше скорость слива)")
+    parser.add_argument("--host", default="127.0.0.1", help="адрес telnet OpenOCD или монитора Renode")
+    parser.add_argument("--port", type=int, default=None, help="порт telnet: OpenOCD 4444, Renode 1234")
+    parser.add_argument("--openocd", default=shutil.which("openocd") or "", help="путь к openocd")
+    parser.add_argument("--use-running", action="store_true", help="не запускать OpenOCD, подключиться к работающему")
+    parser.add_argument("--doctor", action="store_true", help="проверка окружения без записи")
+    parser.add_argument("--dryrun", action="store_true", help="показать план без записи")
+    parser.add_argument("--list-signals", action="store_true",
+                        help="офлайн: выписать глобальные переменные прошивки из ELF в CSV для спецификации полей (плата не нужна)")
+    parser.add_argument("--signals-path", default="src/",
+                        help="--list-signals: фильтр по пути исходника (подстрока), по умолчанию src/")
+    parser.add_argument("--signals-depth", type=int, default=2,
+                        help="--list-signals: глубина раскрытия структур (0 — только скаляры, по умолчанию 2)")
+    args = parser.parse_args(argv)
+
+    if args.list_signals:
+        sys.path.insert(0, str(HERE))
+        import list_signals
+        elf = find_elf(args.elf)
+        return list_signals.main(["--elf", str(elf), "--path", args.signals_path,
+                                  "--depth", str(args.signals_depth)]
+                                 + (["--out", args.out] if args.out else []))
+
+    if args.rate <= 0 or args.seconds <= 0:
+        parser.error("--rate и --seconds должны быть положительными")
+    if args.port is None:
+        args.port = DEFAULT_PORTS.get(args.backend, 4444)
+    if args.backend == "renode":
+        args.use_running = True  # Renode запускается отдельно: OpenOCD не нужен
+    if args.backend == "rtt-timer":
+        if not args.toolchain:
+            toolchain = os.environ.get("STM32_TOOLCHAIN_PATH", "")
+            args.toolchain = str(pathlib.Path(toolchain) / "bin") if toolchain else \
+                str(pathlib.Path(os.environ.get("GDB", "")).resolve().parent) if os.environ.get("GDB") else ""
+        sys.path.insert(0, str(HERE / "rtt"))
+        import rtt_timer
+        return rtt_timer.doctor(args) if args.doctor else rtt_timer.run(args)
+    if args.doctor:
+        return doctor(args)
+    if not args.openocd and not args.use_running:
+        print("ОШИБКА: openocd не найден в PATH (--openocd или --use-running)")
+        return 1
+    elf = find_elf(args.elf)
+    if not elf.is_file():
+        print("ОШИБКА: нет ELF %s (укажите --elf)" % elf)
+        return 1
+    if not pathlib.Path(args.fields).is_file():
+        print("ОШИБКА: нет файла полей %s" % args.fields)
+        return 1
+
+    out = pathlib.Path(args.out) if args.out else \
+        elf.parent / "diag" / ("record-%s.%s" % (time.strftime("%Y%m%d-%H%M%S"), args.record))
+    out = out.resolve()
+
+    if args.dryrun:
+        print("=== DRYRUN: ничего не пишется, OpenOCD не запускается ===")
+        print("  ELF:      %s" % elf)
+        print("  поля:     %s" % args.fields)
+        print("  формат:   %s -> %s" % (args.record, out))
+        print("  длина:    %.0f с, частота %.0f Гц" % (args.seconds, args.rate))
+        if args.backend == "renode":
+            print("  Renode:   монитор %s:%d (запуск отдельно: renode --port %d)" % (args.host, args.port, args.port))
+        elif args.use_running:
+            print("  OpenOCD:  уже запущен, telnet %s:%d" % (args.host, args.port))
+        else:
+            print("  OpenOCD:  %s" % " ".join(openocd_command(args)))
+        return 0
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    addresses, fields = resolve(args, elf, out.parent)
+    print("адреса: %s (полей %d)" % (addresses, len(fields)))
+
+    process = start_openocd(args, out.with_suffix(".openocd.log"))
+    try:
+        stats = record(args, fields, out)
+    finally:
+        stop_openocd(process)
+
+    achieved = stats["cycles"] / stats["elapsed"] if stats["elapsed"] > 0 else 0.0
+    print("готово: %s (%d байт)" % (out, out.stat().st_size))
+    print("  сообщений %d, циклов %d, частота %.1f Гц из %.1f, сбоев чтения %d, вне диапазона %d%s"
+          % (stats["written"], stats["cycles"], achieved, args.rate, stats["read_failures"], stats["out_of_range"],
+             ", остановлено досрочно" if stats["interrupted"] else ""))
+    if achieved < 0.9 * args.rate and stats["cycles"] > 1:
+        print("  ВНИМАНИЕ: частота ниже заданной: меньше полей, ближе адреса или ниже --rate")
+    mcap = shutil.which("mcap")
+    if args.record == "mcap" and mcap:
+        info = subprocess.run([mcap, "info", str(out)], capture_output=True, text=True)
+        for line in info.stdout.splitlines():
+            if line.startswith(("messages:", "channels:")):
+                print("  " + line)
+    return 0 if stats["written"] else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

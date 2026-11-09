@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "comment": "Правила по умолчанию для спирали выпуска. Копию с правками передают в build_turns.py через --rules.",
+  "time": {
+    "launch_min": 3,
+    "fail_analysis_min": 10,
+    "board_swap_min": 5,
+    "pipeline_branch_min": 10,
+    "pipeline_tag_min": 15,
+    "pipeline_image_min": 15,
+    "local_ci_min": 5,
+    "commit_window_min": 30,
+    "merge_window_min": 10,
+    "local_ci_window_min": 10,
+    "session_gap_min": 45,
+    "direct_commit_gap_h": 24,
+    "confirm_gap_h": 12
+  },
+  "sectors": ["план, ТЗ, разбор", "изменение", "проверка на платах", "CI и выпуск"],
+  "lanes": {
+    "План и ТЗ": 0, "Разбор и отчёты": 0, "Изменение": 1,
+    "Локальный стенд": 2, "Удалённый стенд": 2, "Лаборатория": 2, "Ручные испытания": 2, "Смена платы": 2,
+    "Эмуляция": 2, "Локальный CI и скрипты": 3, "CI сервера": 3
+  },
+  "commit_types": {
+    "plan": ["docs\\((spec|todo|plan|research)\\)", "^docs(\\(.*\\))?: .*(ТЗ|план|памятк)", "^plan"],
+    "change": ["^(feat|fix|refactor|perf|style|build|revert)(\\(|:|!)"],
+    "check": ["^test(\\(|:)"],
+    "release": ["^(ci|chore)(\\(|:)", "^docs(\\((changelog|readme|release)\\))?:", "^Merge ", "^Reapply ", "^Revert "]
+  },
+  "release_patterns": ["chore(\\(.*\\))?: .*(верси|version|release)", "docs\\(changelog\\)"],
+  "merge_patterns": [
+    "^Merge branch '(?P<src>[^']+)' into '(?P<dst>[^']+)'",
+    "^Merge pull request #\\d+ from [^/]+/(?P<src>\\S+)",
+    "^Merge branch '(?P<src>[^']+)'$",
+    "^Merge remote-tracking branch '(?:origin/)?(?P<src>[^']+)' into (?P<dst>\\S+)"
+  ]
+}
